@@ -5,39 +5,47 @@ import requests
 from bs4 import BeautifulSoup
 from lxml import html
 
+
 endereco_time= {'al-hilal':'al-hilal/21895','al-taawoun':'al-taawoun/56021','al-ittihad':'al-ittihad/34315','al-ahli':'/al-ahli/34469','al-ettifaq':'al-ettifaq/34318','al-nassr':'al-nassr/23400','al-fateh':'al-fateh/56023','al-fayha':'al-fayha/168094','al-wehda':'al-wehda/32994','abha':'abha/168090','al-tai':'al-tai/168072','al-khaleej':'al-khaleej/167228','al-akhdood':'al-akhdood/336456','al-raed':'al-raed/56031','al-riyadh':'al-riyadh/168088','damac-fc':'damac-fc/204126','al-shabab':'al-shabab/34313','al-hazem':'al-hazem/168086'}
 
-def procura_time(time:str):
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    base_url='https://www.sofascore.com/team/football/'
+browser={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \(KHTML, like Gecko) Chrome / 86.0.4240.198Safari / 537.36"}
+
+
+base_api='https://api.sofascore.com/api/v1/team/'
+end_api='/statistics/overall'
+
+def escolhe_time(time:str):
+    lista_dados=  []
+    cont_url_list=0
+    cont_data_list=0
     
-    url= base_url + endereco_time[time]
+    id_time= endereco_time[time.lower()][-5:]
+    end_point_23 = '53241'
+    end_point_22 = '44908'
+    end_point_21 = '34459'
     
-    driver.get(url)
+    middle_api=f'/unique-tournament/955/season/'
     
-    soup =BeautifulSoup(driver.page_source, 'html.parser')
+    url_22=base_api + id_time + middle_api + end_point_22 + end_api
+    url_23=base_api + id_time + middle_api + end_point_23 + end_api
+    url_21=base_api + id_time + middle_api + end_point_21 + end_api
     
-    conteudo = str(soup)
+    lista_urls=[url_22 ,url_23 ,url_21]
     
-    estrutura = html.fromstring(conteudo)
-    
-    dicionario_de_dados={}
-    
-    for i in range(2,7):
-        base_xpath= f'//*[@id="__next"]/main/div[2]/div/div[2]/div[2]/div[4]/div[3]/div[{i}]/div[2]/div[*]/'
-        elemento_1 = estrutura.xpath(base_xpath + 'span[1]')
-        elemento_2 = estrutura.xpath(base_xpath + 'span[2]')
-        for dado in range(len(elemento_1)):
-            if dado==0:
-                dicionario_de_dados['Time'] = time.title()
-            dicionario_de_dados[elemento_1[dado].text] =elemento_2[dado].text
+    for url in lista_urls:
+        api_link= requests.get(url,headers=browser).json()
+        if not 'error' in api_link:
+            lista_dados.append(api_link['statistics'])
+            if lista_urls.index(lista_urls[cont_url_list])==0:
+                lista_dados[cont_data_list]['ano'] =2022
+            elif lista_urls.index(lista_urls[cont_url_list])==1:
+                  lista_dados[cont_data_list]['ano'] =2023
+            elif lista_urls.index(lista_urls[cont_url_list])==2:
+                  lista_dados[cont_data_list]['ano'] =2021
+            cont_data_list +=1
+        cont_url_list +=1
             
-    return dicionario_de_dados
-            
-            
-        
-    
-    
+        return lista_dados
 
 
 
