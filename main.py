@@ -33,6 +33,8 @@ def escolhe_time(time:str):
     
     lista_urls=[url_21,url_22]
     
+    
+    
     for url in lista_urls:
         api_link= requests.get(url,headers=browser).json()
         if not 'error' in api_link:
@@ -78,7 +80,39 @@ def construir_grafico(metrica: str, time1:str,time2:str):
     )
     
     return fig.show()
-    
+
+
+
     
 
-construir_dataframe('al-hilal')
+def escolher_time_2023(time:str):
+    data_list= []
+    id_time = endereco_time[time.lower()][-5:]
+    session_23='53241'
+    middle_api='/unique-tournament/955/season/'
+    
+    url = base_api + id_time + middle_api + session_23 + end_api
+    
+    api_link = requests.get(url,headers=browser).json()
+    
+    if not 'error' in api_link:
+        data_list.append(api_link['statistics'])
+
+    
+    return data_list
+
+def construir_dataframe_2023(time:str):
+    team = escolher_time_2023(time)
+    
+    time_dataframe=pd.DataFrame(index=team[0].keys())
+    time_dataframe['ANO 2023']=team[0].values()
+        
+    time_dataframe['Media']=time_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
+    
+    return time_dataframe
+
+
+    
+
+escolher_time_2023('al-hilal')
+construir_dataframe_2023('al-hilal')
