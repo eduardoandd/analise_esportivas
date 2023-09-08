@@ -17,40 +17,82 @@ browser={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53
 base_api='https://api.sofascore.com/api/v1/team/'
 end_api='/statistics/overall'
 
-def escolhe_time(time:str):
-    lista_dados=  []
-    cont_url_list=0
-    cont_data_list=0
-    
-    id_time = endereco_time[time.lower()].split('/')[-1]
-    end_point_23 = '53241'
-    end_point_22 = '44908'
-    end_point_21 = '34459'
-    
-    middle_api=f'/unique-tournament/955/season/'
-    
-    url_22=base_api + id_time + middle_api + end_point_22 + end_api
-    url_23=base_api + id_time + middle_api + end_point_23 + end_api
-    url_21=base_api + id_time + middle_api + end_point_21 + end_api
-    
-    lista_urls=[url_21,url_22]
-    
-    
-    
-    for url in lista_urls:
-        api_link= requests.get(url,headers=browser).json()
-        if not 'error' in api_link:
-            lista_dados.append(api_link['statistics'])
-            if lista_urls.index(lista_urls[cont_url_list])==0:
-                lista_dados[cont_data_list]['ano'] =2021
-            elif lista_urls.index(lista_urls[cont_url_list])==1:
-                  lista_dados[cont_data_list]['ano'] =2022
-            elif lista_urls.index(lista_urls[cont_url_list])==2:
-                  lista_dados[cont_data_list]['ano'] =2023
-            cont_data_list +=1
-        cont_url_list +=1
+
+class Insights:
+    def __init__(self,time,ano):
+        self.time=time
+        self.ano = ano
+        
+    def escolhe_time(self):
+        
+        if self.ano < 2023:
+            data_list = []
+            cont_url_list =0
+            cont_data_list=0
             
-    return lista_dados
+            id_time = endereco_time[self.time.lower()].split('/')[-1]
+            session_21 = '34459'
+            session_22 = '44908'
+            
+            middle_api=f'/unique-tournament/955/season/'
+            url_21=base_api + id_time + middle_api + session_21 + end_api
+            url_22=base_api + id_time + middle_api + session_22 + end_api
+            
+            url_list = [url_21,url_22]
+            
+            for url in url_list:
+                api_link= requests.get(url,headers=browser).json()
+                if not 'error' in api_link:
+                    data_list.append(api_link['statistics'])
+                    if url_list.index(url_list[cont_url_list])==0:
+                        data_list[cont_data_list]['ano'] =2021
+                    elif url_list.index(url_list[cont_url_list])==1:
+                        data_list[cont_data_list]['ano'] = 2022
+                    cont_data_list +=1
+                cont_url_list +=1
+                
+            return data_list
+        
+        else:
+            data_list= []
+            id_time = endereco_time[self.time.lower()].split('/')[-1]
+            session_23='53241'
+            middle_api='/unique-tournament/955/season/'
+    
+            url = base_api + id_time + middle_api + session_23 + end_api
+    
+            api_link = requests.get(url,headers=browser).json()
+    
+            if not 'error' in api_link:
+                data_list.append(api_link['statistics'])
+
+        return data_list
+    
+    
+    def gera_dataframe(self):
+        team = self.escolhe_time()
+        team_dataframe = pd.DataFrame(index=team[0].keys())
+        
+        if self.ano < 2023:
+            for i in range(len(team)):
+                team_dataframe[str(team[i]['ano'])] = team[i].values()
+        else:
+            team_dataframe['Media']=team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
+            
+        team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
+        
+        return team_dataframe
+        
+            
+            
+        
+    
+
+
+insights1 = Insights('al-hilal',2023)
+insights1.gera_dataframe()
+
+
 
 
 def construir_dataframe(time:str):
@@ -64,6 +106,45 @@ def construir_dataframe(time:str):
     time_dataframe['Media']=time_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
     
     return time_dataframe
+
+
+
+# def escolhe_time(time:str):
+#     lista_dados=  []
+#     cont_url_list=0
+#     cont_data_list=0
+    
+#     id_time = endereco_time[time.lower()].split('/')[-1]
+#     end_point_23 = '53241'
+#     end_point_22 = '44908'
+#     end_point_21 = '34459'
+    
+#     middle_api=f'/unique-tournament/955/season/'
+    
+#     url_22=base_api + id_time + middle_api + end_point_22 + end_api
+#     url_23=base_api + id_time + middle_api + end_point_23 + end_api
+#     url_21=base_api + id_time + middle_api + end_point_21 + end_api
+    
+#     lista_urls=[url_21,url_22]
+    
+    
+    
+    # for url in lista_urls:
+    #     api_link= requests.get(url,headers=browser).json()
+    #     if not 'error' in api_link:
+    #         lista_dados.append(api_link['statistics'])
+    #         if lista_urls.index(lista_urls[cont_url_list])==0:
+    #             lista_dados[cont_data_list]['ano'] =2021
+    #         elif lista_urls.index(lista_urls[cont_url_list])==1:
+    #               lista_dados[cont_data_list]['ano'] =2022
+    #         elif lista_urls.index(lista_urls[cont_url_list])==2:
+    #               lista_dados[cont_data_list]['ano'] =2023
+    #         cont_data_list +=1
+    #     cont_url_list +=1
+            
+    # return lista_dados
+
+
 
 
 def construir_grafico(metrica: str, time1:str,time2:str):
@@ -116,7 +197,7 @@ def construir_dataframe_2023(time:str):
 
     
 
-construir_dataframe_2023('al-riyadh')
+#construir_dataframe_2023('al-riyadh')
 
 
 df=construir_dataframe_2023('al-hilal')
@@ -132,3 +213,4 @@ btn=st.button('Dados retirados do [SofasCore](https://www.sofascore.com/)')
 
 if btn:
     wb.open_new_tab('https://www.sofascore.com/')
+    
