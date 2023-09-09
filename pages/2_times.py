@@ -22,10 +22,10 @@ base_api='https://api.sofascore.com/api/v1/team/'
 end_api='/statistics/overall'
 
 clubes = endereco_time.keys()
-clubes=[clube.capitalize() for clube in clubes]
+#clubes=[clube.capitalize() for clube in clubes]
 clube=st.sidebar.selectbox('Clube', clubes)
 
-insights1 = Insights(clube,2022)
+insights1 = Insights(clube,2023)
 df=insights1.gera_dataframe()
 df
 

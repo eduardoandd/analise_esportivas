@@ -82,10 +82,11 @@ class Insights:
         if self.ano < 2023:
             for i in range(len(team)):
                 team_dataframe[str(team[i]['ano'])] = team[i].values()
+
         else:
+            team_dataframe['ANO 2023']=team[0].values()
             team_dataframe['Media']=team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
-            
-        team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
+            team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
         
         return team_dataframe
 
