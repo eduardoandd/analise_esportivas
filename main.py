@@ -17,9 +17,9 @@ import webbrowser as wb
 
 
 endereco_time= {'al-hilal':'al-hilal/21895','al-taawoun':'al-taawoun/56021','al-ittihad':'al-ittihad/34315','al-ahli':'/al-ahli/34469','al-ettifaq':'al-ettifaq/34318','al-nassr':'al-nassr/23400','al-fateh':'al-fateh/56023','al-fayha':'al-fayha/168094','al-wehda':'al-wehda/32994','abha':'abha/168090','al-tai':'al-tai/168072','al-khaleej':'al-khaleej/167228','al-akhdood':'al-akhdood/336456','al-raed':'al-raed/56031','al-riyadh':'al-riyadh/168088','damac-fc':'damac-fc/204126','al-shabab':'al-shabab/34313','al-hazem':'al-hazem/168086'}
+
+endereco_time_inglaterra={'manchester-city':'manchester-city/17','tottenham-hotspur':'tottenham-hotspur/33'}
     
-
-
 
 browser={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \(KHTML, like Gecko) Chrome / 86.0.4240.198Safari / 537.36"}
 
@@ -32,7 +32,7 @@ class Insights:
         self.ano = ano
         
         
-    def escolhe_time(self):
+    def escolhe_time_arabia(self):
         
         if self.ano < 2023:
             
@@ -75,8 +75,12 @@ class Insights:
 
         return data_list
 
-    def gera_dataframe(self):
-        team = self.escolhe_time()
+    def gera_dataframe(self,liga):
+        if liga =='inglaterra':
+            team = self.escolhe_time_inglarerra()
+        else:
+            team = self.escolhe_time_arabia()
+            
         team_dataframe = pd.DataFrame(index=team[0].keys())
         
         if self.ano < 2023:
@@ -89,6 +93,57 @@ class Insights:
             team_dataframe.mean(axis=1).apply(lambda x: float('{:.1f}'.format(x)))
         
         return team_dataframe
+    
+    
+    def escolhe_time_inglarerra(self):
+        if self.ano < 2023:
+            
+            data_list = []
+            cont_url_list =0
+            cont_data_list=0
+            
+            id_time = endereco_time_inglaterra[self.time].split('/')[-1]
+            session_21 = '37036'
+            session_22 = '41886'
+            
+            middle_api=f'/unique-tournament/17/season/'
+            url_21=base_api + id_time + middle_api + session_21 + end_api
+            url_22=base_api + id_time + middle_api + session_22 + end_api
+            url_list = [url_21,url_22]
+            
+            for url in url_list:
+                api_link= requests.get(url,headers=browser).json()
+                if not 'error' in api_link:
+                    data_list.append(api_link['statistics'])
+                    if url_list.index(url_list[cont_url_list])==0:
+                        data_list[cont_data_list]['ano'] =2021
+                    elif url_list.index(url_list[cont_url_list])==1:
+                        data_list[cont_data_list]['ano'] = 2022
+                    cont_data_list +=1
+                cont_url_list +=1
+        
+        else:
+            data_list= []
+            id_time = endereco_time_inglaterra[self.time].split('/')[-1]
+            session_23='52186'
+            middle_api='/unique-tournament/17/season/'
+    
+            url = base_api + id_time + middle_api + session_23 + end_api
+    
+            api_link = requests.get(url,headers=browser).json()
+    
+            if not 'error' in api_link:
+                data_list.append(api_link['statistics'])
+
+        return data_list
+             
+        
+    
+insights1 = Insights('manchester-city',2022)
+df=insights1.gera_dataframe(liga='inglaterra')
+        
+        
+    
 
 
 # i =Insights('al-hilal',2023)
